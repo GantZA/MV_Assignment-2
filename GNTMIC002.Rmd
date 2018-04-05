@@ -1,0 +1,366 @@
+---
+title: 'Multivariate Analysis: Assignment 2'
+author: "Michael Gant"
+date: "03 April 2018"
+geometry: "left=1.5cm,right=1.5cm,top=2cm,bottom=2cm"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, include = FALSE)
+knitr::opts_chunk$set(root.dir = "/UCT 2018/MV/Assignment 2")
+```
+
+```{r WorkingCode}
+library(knitr)
+library(kableExtra)
+options()
+track_data = read.csv("NationalTrack.csv")
+#1
+FemTD = track_data[track_data$Gender=="Female",seq(2,8)]
+PCA1 = prcomp(FemTD, scale = F)
+PCA1$rotation
+PCA1$x
+PCA1
+sum1 = summary(PCA1)
+
+
+sum1$importance[c(1,2),c(1,2)]
+sum1$rotation[,c(1,2)]
+tab1 = round(t(as.matrix(rbind(sum1$rotation[,c(1,2)], sum1$importance[c(1,2),c(1,2)]))),3)
+tab1[,8] = tab1[,8]^2
+colnames(tab1)[8] = "Eigenvalue"
+
+
+rankCountryFem = matrix(c(PCA1$x[,1],as.character(track_data[track_data$Gender=="Female",10])), ncol = 2, nrow = 54)
+rankCountryFem = rankCountryFem[order(as.numeric(as.character(rankCountryFem[,1])), decreasing = T),]
+rankCountryFem = cbind(seq(1,54),rankCountryFem)
+colnames(rankCountryFem) = c("Rank","PC1", "Country")
+rankCountryFem[,2] = round(as.numeric(rankCountryFem[,2]),3)
+
+plot(PCA1, type = "l")
+
+
+#2
+metMat = matrix(c(100,200,400,800,1500,3000, 42195), nrow = 54, ncol = 7, byrow = T)
+FemTD[,c(-1,-2,-3)] = FemTD[,c(-1,-2,-3)]*60
+FemTDmps = metMat / FemTD
+PCA2 = prcomp(FemTDmps, scale = T)
+PCA2
+sum2 = summary(PCA2)
+
+tab2 = round(t(as.matrix(rbind(sum2$rotation[,c(1,2)], sum2$importance[c(1,2),c(1,2)]))),3)
+tab2[,8] = tab2[,8]^2
+colnames(tab2)[8] = "Eigenvalue"
+
+rankCountryFemMps = matrix(c(PCA2$x[,1],as.character(track_data[track_data$Gender=="Female",10])), ncol = 2, nrow = 54)
+rankCountryFemMps = rankCountryFemMps[order(as.numeric(as.character(rankCountryFemMps[,1])), decreasing = T),]
+rankCountryFemMps = cbind(seq(1,54),rankCountryFemMps)
+colnames(rankCountryFemMps) = c("Rank","PC1", "Country")
+rankCountryFemMps[,2] = round(as.numeric(rankCountryFemMps[,2]),3)
+
+
+plot(PCA2, type = "l")
+
+#3
+MalTD = track_data[track_data$Gender=="Male",c(seq(2,6),8,11,12)]
+
+PCA3 = prcomp(MalTD, scale = F)
+PCA3$rotation
+sum3 = summary(PCA3)
+
+sum3$importance[c(1,2),c(1,2)]
+sum3$rotation[,c(1,2)]
+tab3 = round(t(as.matrix(rbind(sum3$rotation[,c(1,2)], sum3$importance[c(1,2),c(1,2)]))),3)
+tab3[,9] = tab3[,9]^2
+colnames(tab3)[9] = "Eigenvalue"
+
+PCA3
+rankCountryMal = cbind(PCA3$x[,1], as.character(track_data[track_data$Gender=="Male",10]))
+rankCountryMal[,1] = as.numeric(rankCountryMal[,1])
+rankCountryMal = rankCountryMal[order(as.numeric(as.character(rankCountryMal[,1])), decreasing = T),]
+plot(PCA3, type = "l")
+
+rankCountryMal = matrix(c(PCA3$x[,1],as.character(track_data[track_data$Gender=="Male",10])), ncol = 2, nrow = 54)
+rankCountryMal = rankCountryMal[order(as.numeric(as.character(rankCountryMal[,1])), decreasing = T),]
+rankCountryMal = cbind(seq(1,54), rankCountryMal)
+colnames(rankCountryMal) = c("Rank","PC1", "Country")
+rankCountryMal[,2] = round(as.numeric(rankCountryMal[,2]),3)
+
+
+
+#4
+metMatMal = matrix(c(100,200,400,800,1500, 42195, 5000,10000), nrow = 54, ncol = 8, byrow = T)
+MalTD[,c(-1,-2,-3)] = MalTD[,c(-1,-2,-3)]*60
+MalTDmps = metMatMal / MalTD
+PCA4 = prcomp(MalTDmps, scale = T)
+PCA4$rotation
+plot(PCA4, type = "l")
+
+sum4 = summary(PCA4)
+
+sum4$importance[c(1,2),c(1,2)]
+sum4$rotation[,c(1,2)]
+tab4 = round(t(as.matrix(rbind(sum4$rotation[,c(1,2)], sum4$importance[c(1,2),c(1,2)]))),3)
+tab4[,9] = tab4[,9]^2
+colnames(tab4)[9] = "Eigenvalue"
+
+rankCountryMalMps = matrix(c(PCA4$x[,1],as.character(track_data[track_data$Gender=="Male",10])), ncol = 2, nrow = 54)
+rankCountryMalMps = rankCountryMalMps[order(as.numeric(as.character(rankCountryMalMps[,1])), decreasing = T),]
+rankCountryMalMps = cbind(seq(1,54), rankCountryMalMps)
+colnames(rankCountryMalMps) = c("Rank","PC1", "Country")
+rankCountryMalMps[,2] = round(as.numeric(rankCountryMalMps[,2]),3)
+
+
+
+
+```
+
+#Principle Component Analysis
+##Underlying Method
+Principle Component Analysis (PCA) is a non-parametric method of extracting relevant information from a data set. This is accomplished through decomposing the variance-covariance structure and redundancy reduction. 
+\
+\
+Decomposing the variance-covariance structure is done via linear combinations of the  variables of the observed data $\boldsymbol{X}$. This forms a new, more meaningful basis on which to re-express the data. The new basis can be represented by a simple linear equation:
+\[
+  \boldsymbol{A}\boldsymbol{X} = \boldsymbol{Y} 
+\]
+where $\boldsymbol{A}$ is the linear transformation matrix and $\boldsymbol{Y}$ is the new representation of the data. This equation gives a basic overview of what PCA does. The question now is what linear combination to choose.
+\
+\
+The derivation of PCA is based on finding coefficients that maximise $\boldsymbol{a}' \boldsymbol{\Sigma} \boldsymbol{a}$ subject to $\boldsymbol{a}'\boldsymbol{a}=1$ where $\boldsymbol{\Sigma}$ is the covariance matrix of $\boldsymbol{X}$. The coefficient vectors $\boldsymbol{a}_i$ define the linear combinations that result in $\boldsymbol{Y}_i$ as follows:
+\begin{align*}
+\boldsymbol{Y}_1  = \boldsymbol{a}'_1 \boldsymbol{X} \\
+\boldsymbol{Y}_2  = \boldsymbol{a}'_2 \boldsymbol{X} \\
+\vdots \\
+\boldsymbol{Y}_p  = \boldsymbol{a}'_p \boldsymbol{X}
+\end{align*}
+where $\text{Var}(\boldsymbol{Y}_i) = \boldsymbol{a}_i' \boldsymbol{\Sigma} \boldsymbol{a}_i$ and $\text{Cov}(\boldsymbol{Y}_i, \boldsymbol{Y}_k) = \boldsymbol{a}_i' \boldsymbol{\Sigma} \boldsymbol{a}_k$ for $i,k = 1,..,p$\
+\
+It can be shown that the coefficient vectors, $\boldsymbol{a}_i$, are the eigenvectors of the covariance matrix of $\boldsymbol{X}$. The associated eigenvalues, $\lambda_i$, show how much of the total variance is decomposed by the corresponding eigenvector with large eigenvalues explaining more variance than smaller ones. 
+\
+\
+Thus we can find $\boldsymbol{Y}$ as the matrix of row vector principle components using the eigenvectors of $\boldsymbol{\Sigma}$. As eigenvectors are not correlated, the covariance matrix of $\boldsymbol{Y}$ is a diagonal matrix. Thus it can be shown that $\sum_{i=1}^{p}\text{Var}(\boldsymbol{X}_i) = \lambda_1 + \lambda_2 +...+ \lambda_p = \sum_{i=1}^{p}\text{Var}(\boldsymbol{Y}_i)$ and we can calculate the total proportion of variance due to the j'th principle component as:
+\[
+\frac{\lambda_j}{\lambda_1 + \lambda_2 +...+ \lambda_p}
+\]
+##PCA Application to National Track Records
+
+The objective of applying PCA to the given National Track Record data is to determine the linear combinations of variables that explain the majority of the variance. The female record times for 100m, 200m, 400m, 800m, 1500m, 3000m from 55 countries were analysed first. The first 2 principle components are tabulated below with their respective variance proportion:
+
+`r kable(tab1, caption = "Summary of First 2 Principle Components for Female Event Record Times")`
+
+The first principle component combines the variables with most of the weight on the marathon record time variable. This is difficult to interpret as it seems to be an overall athletic record score but with the majority of the emphasis on the marathon record time. The negative weights are present as a lower record time is better and so the centered event time for an above average performance will be negative. \
+\
+The second principle component has positive coefficients for all different records except the marathon record. Again, this is difficult to interpret as the 400m record coefficient is significantly larger than the rest. The proportion of variance explained by the first principle component is 98.4% and the second is 1.4%. The first principle component explains more than enough of the variance and the second does not contribute much.
+\
+\
+Multiplying the data matrix $\boldsymbol{X}$ by the eigenvector related to the first principle component gives a marathon-dominated athletic record score for each country. The rankings of the countries and their respective scores are summarised below:
+
+`r kable(rankCountryFem[seq(1,10),], caption = "Rankings of Countries by first Principle Component score (Female)")`
+
+From the rankings it can be seen that Great Britain has the highest score which is due to the country having the fastest female marathon record time.
+\
+\
+The data is now transformed from the record time of the events to the record speed in the event measured in meters per second. The prior PCA methods are applied on the converted and scaled data. The data is scaled in order to equalise the deviations in speeds in different events. As the speed differences in shorter races are significantly smaller than those of the long-distance events, not scaling would overlook the short-distance event deviations and focus on the long-distance event speed. Thus, scaling allows more insight of a countries record speed over all the events.
+
+`r kable(tab2, caption = "Summary of First 2 Prinicple Components for Female Event Record Speeds (M/s)")`
+
+The first 2 principle components can be interpreted much more easily than before. The first principle component represents an overall event record speed score, with all the events contributing similarly to the score. The positive coefficients mean that higher record speeds are better than lower speeds. \
+\
+The second principle component can be interpreted as a contrast of the short distance events to the long-distance events. PC2 essentially measures what type of events a country performs relatively well in. A positive value would indicate a country who performs better in long-distance events and conversely a negative value would indicate a country who performs better at short distance events. Values close to zero would indicate a country who performs equally in both distance events.
+\
+\
+The proportion of variance explained by PC1 and PC2 is 83.3% and 9.3% respectively. The cost of obtaining a principle component that is clearer to interpret is a lower proportion of variance explained. However, the first 2 principle components combined explain over 92% of the variance, more than enough to justify transforming the data to meters per second. The meters per second transformation is also beneficial as speed combines the information from the time taken for the event and the distance of the event.
+\
+\
+The rankings of the countries on PC1 have changed and the first 10 are shown below:
+
+`r kable(rankCountryFemMps[seq(1,10),], caption = "Rankings of Countries by first Principle Component score (M/s)")`
+
+Plotting a scree plot below shows that the first 2 principle components are the most important when using the visual elbow rule.\
+
+```{r plo1, include=TRUE}
+
+plot(PCA2, type="l", main = "Scree Plot for the PCA of Female Record Speeds (M/s)")
+
+```
+Moving on to the PCA of the male records, the data is slightly different as there are 2 events which males compete in that women don't and 1 event that females compete in that males don't. The following 2 tables show the first 2 principle components for the male events with record times and record speeds respectively:
+
+`r kable(tab3, caption = "Summary of First 2 Prinicple Components for Male Record Times")`
+
+`r kable(tab4, caption = "Summary of First 2 Prinicple Components for Male Records Speeds M/s")`
+
+The interpretation of the first 2 principle components for the male record time data is exactly the same as for the female record time data. Therefore, it makes sense to do the meters per second transformation. Subsequently, it can be seen that PC1 measures overall event record speed score for each country, with all events being considered. For PC2, the negative and positive coefficients indicate that the
+principle component contrasts short and long-distance event record speeds, with a slight emphasis on the ultra-long-distance events.
+\
+\
+As with the female record speed scores, the rankings of the male record time and speed scores by the first principle components are summarised in the table below:
+
+`r kable(rankCountryMal[seq(1,10),], caption = "Rankings of Countries by first Principle Component score (Male)")`
+
+`r kable(rankCountryMalMps[seq(1,10),], caption = "Rankings of Countries by first Principle Component score (M/s)")`
+
+There is a significant change in the rankings after transforming and scaling the data.
+\
+\
+Comparisons between the principle component analysis results from the female data to the male data should be approached with caution due to the set of different events that each gender competed in. The values of the coefficients and eigenvalues cannot be compared due to the scaling and centering of the data. However, the proportion of variances can be compared and it can be seen that the proportion of variance explained is very similar across genders. 
+
+
+```{r WorkingCodeFA}
+
+############Factor Analysis
+
+boldify = function(x){
+  for (i in 1:nrow(x)){
+    for (j in 1:ncol(x)){
+      if (x[i,j]>0.5){
+          x[i,j] = paste("**", x[i,j], "**",sep = "")
+      }
+    }
+  }
+  return(x)
+}
+
+
+sFemTD = scale(track_data[track_data$Gender=="Female",seq(2,8)])
+sFemTDMps = scale(FemTDmps)
+sMalTD = scale(track_data[track_data$Gender=="Male",c(seq(2,6),8,11,12)])
+sMalTDMps = scale(MalTDmps)
+#1
+corr1 = cor(sFemTD)
+eig1 = eigen(corr1)
+rel_var1 = sum(eig1$values[c(1,2)])/7
+L = eig1$vectors[,1:2] %*% diag(sqrt(eig1$values[1:2]))
+
+FA1 = factanal(covmat = corr1, correlation, factors = 2, rotation = "none")
+FA1$loadings
+matFA1 = cbind(matrix(as.numeric(FA1$loadings), ncol = 7, nrow = 2, byrow = T),c(0.801,0.085))
+
+
+colnames(matFA1) = c(colnames(sFemTD), "Proportion of Variance")
+rownames(matFA1) = c("Factor 1", "Factor 2")
+#2
+
+corr2 = cor(sFemTDMps)
+eig2 = eigen(corr2)
+rel_var2 = sum(eig2$values[c(1,2)])/7
+L = eig2$vectors[,1:2] %*% diag(sqrt(eig2$values[1:2]))
+
+FA2 = factanal(covmat = corr2, correlation, factors = 2, rotation = "none")
+matFA2 = matrix(as.numeric(FA2$loadings), ncol = 7, nrow = 2, byrow = T)
+matFA2 = cbind(matFA2, c(0.812,0.081))
+
+
+colnames(matFA2) = c(colnames(sFemTDMps), "Proportion of Variance")
+rownames(matFA2) = c("Factor 1", "Factor 2")
+
+FA1.1 = factanal(x = sFemTD, factors = 2, rotation = "promax", scores = "regression")
+FA1.1
+matFA1.1 = cbind(matrix(as.numeric(FA1.1$loadings), ncol = 7, nrow = 2, byrow = T),c(0.415,0.391))
+colnames(matFA1.1) = c(colnames(sFemTD), "Proportion of Variance")
+rownames(matFA1.1) = c("Factor 1", "Factor 2")
+
+FA2.1 = factanal(x = sFemTDMps, factors = 2, rotation = "promax", scores = "regression")
+
+matFA2.1 = boldify(round(cbind(matrix(as.numeric(FA2.1$loadings), ncol = 7, nrow = 2, byrow = T),c(0.43,0.379)),3))
+colnames(matFA2.1) = c(colnames(sFemTD), "Proportion of Variance")
+rownames(matFA2.1) = c("Factor 1", "Factor 2")
+
+
+
+
+sMalTDMps = scale(MalTDmps)
+corr3 = cor(sMalTDMps)
+FA3 = factanal(covmat = corr3, correlation, factors = 2, rotation = "none")
+matFA3 = matrix(as.numeric(FA3$loadings), ncol = 8, nrow = 2, byrow = T)
+matFA3 = cbind(round(matFA2,3), c(0.792,0.093))
+colnames(matFA3) = c(colnames(sMalTD), "Proportion of Variance")
+rownames(matFA3) = c("Factor 1", "Factor 2")
+
+FA3.1 = factanal(x = sMalTDMps, factors = 2, rotation = "promax", scores = "regression")
+FA3.1
+matFA3.1 = matrix(as.numeric(FA3.1$loadings), ncol = 8, nrow = 2, byrow = T)
+matFA3.1 = cbind(round(matFA3.1,3), c(0.472,0.334))
+colnames(matFA3.1) = c(colnames(sMalTD), "Proportion of Variance")
+rownames(matFA3.1) = c("Factor 1","Factor 2")
+
+matFA3.1 = boldify(matFA3.1)
+
+```
+
+#Factor Analysis
+##Underlying Method
+
+The primary motivation for Factor Analysis is to describe the covariance relationships among the latent (unobservable) variables. These latent variables are measurements that cannot be directly observed due to their nature, such as happiness or standard of living. Proxies can be used to estimate their values, but it is not possible to get a true measure. These latent variables are called factors. The assumption is made that if there are variables that are highly correlated, they act as proxies and represent the underlying factor. The factor analysis model is mathematically represented as:
+
+\begin{equation}
+  \boldsymbol{X}-\boldsymbol{\mu} = \boldsymbol{L}\boldsymbol{F} + \boldsymbol{e}
+\end{equation}
+where $\boldsymbol{X}$ is the observed data, $\boldsymbol{\mu}$ is the mean vector of the data, $\boldsymbol{L}$ is the matrix of factor loadings, $\boldsymbol{F}$ is the vector of unobserved common factors and $\boldsymbol{e}$ is the vector of unobserved specific factors. The elements of the factor loading matrix, $l_{ij}$, represent the estimate of the association between the i'th observed variable and the j'th unobserved factor.\
+\
+The factor analysis model is similar to a multiple regression model, but the "explanatory variables" are the unobserved factors, $f_1, f_2, ...,f_m$ where $m$ is less than the number of variables $p$. Thus, the factor analysis model represents the data in a lower dimension.\
+\
+Under the factor analysis model, the covariance matrix of the data, $\boldsymbol{\Sigma}$, can be expressed as:
+\[
+\boldsymbol{\Sigma} = \boldsymbol{L}\boldsymbol{L}' + \boldsymbol{\Psi}
+\]
+where $\boldsymbol{\Psi}$ is the diagonal covariance matrix of $\boldsymbol{e}$. The right-hand side is a simplified representation of $\boldsymbol{\Sigma}$ depending on the chosen number of factors, $m$. Ideally the number of estimated values $mp + p$ is substantially smaller than the number of unique $\boldsymbol{\Sigma}$ estimates, $p(p+1)/2$, without being too small so as not to be able to adequately represent $\boldsymbol{\Sigma}$.\
+\
+Before going into estimation of the parameters, the rotational ambiguity of factor analysis needs to be addressed. When the number of factors is greater than 1, it can be shown that there are an infinite number of orthogonal matrices that satisfy the required assumptions and equivalently fit the data. This ambiguity is exploited to justify the factor rotation in order to obtain a more parsimonious and interpretable model.   
+\
+\
+There are 2 different ways to estimate the parameters of a factor model, namely:
+\begin{itemize}
+\item Principle Component method
+\item Maximum Likelihood Estimation method
+\end{itemize}
+
+The Principle Component method calculates the sample covariance matrix, $\boldsymbol{S}$, and then, using spectral decomposition, the factor loading matrix is estimated by the eigenvalue-eigenvector pairs of $\boldsymbol{S}$. The estimate of the specific variance matrix, $\boldsymbol{\Psi}$, is given by the diagonal elements of $\boldsymbol{S} - \boldsymbol{\tilde{L}}\boldsymbol{\tilde{L}}'$. \
+\
+If the variables are standardized, the sample correlation matrix used is $\boldsymbol{R}$. The choice of $m$ is the number of positive eigenvalues of $\boldsymbol{S}$ or the number of eigenvalues of $\boldsymbol{R}$ greater than 1. \
+\
+The Maximum Likelihood Estimation method makes a normal distribution assumption about the common factors, $\boldsymbol{F}$ , and the specific factors, $\boldsymbol{e}$. Thus, maximum likelihood estimates for the factor loadings and the specific variances can be obtained through numerical maximization.\
+\
+The ambiguity of rotation was discussed earlier and is brought up again. As factor models are equivalent to a rotated factor model, an appropriate rotation may be found that results in more interpretable factors. The Varimax rotation is one such appropriate rotation that maximises the variances of the squares of the factor loadings. Another rotation is the promax method of oblique rotations, which is used when factors are not independent from one another.\
+\
+Once a satisfactory factor model has been created and rotated, the factor scores can be estimated. Factor scores are the estimated values of the common factors and are similar to principal components. There are 2 methods of estimation that are considered, namely, weighted least squares and regression.  
+
+##Application 
+As with PCA in the previous section, the National Track Record data is analysed using factor models. Firstly, the female record speeds are considered. Due to the consideration of only the first 2 principle components from the PCA section, the factor analysis will only assume 2 underlying factors. The maximum likelihood method is used to estimate the loading matrix and is tabulated below:
+
+`r kable(matFA2, caption = "Factor Loadings estimated using Maximum Likelihood Estimation from Female Record Speeds (M/s)")`
+
+The loadings of factor 1 are all very close to 1, indicating a strong influence on the variables. For the second factor, the majority of the loadings are significant except the loadings for the 800m event.
+
+The loadings are now rotated to obtain better interpretations. As the variables are assumed to not be independent, the oblique rotation promax method is used and the following factor loadings are obtained:
+
+`r kable(matFA2.1, caption = "Rotated Factor Loadings estimated using Maximum Likelihood Estimation from Female Record Speeds (M/s)")`
+
+The bold values indicate the factor loadings that have a significant effect on the variable. The rotation separates the significant factor loadings into 2 groups, 4 loadings related to long-distance events in factor 1 and 3 loadings related to
+short-distance events in factor 2. Thus we can interpret factor 1 as the underlying long-distance performance factor and factor 2 as the short-distance performance factor.\
+\
+The above analysis is repeated for the male record speeds. The following results are obtained:
+
+`r kable(matFA3, caption = "Factor Loadings estimated using Maximum Likelihood Estimation from Male Record Speeds (M/s)")`
+
+`r kable(matFA3.1, caption = "Rotated Factor Loadings estimated using Maximum Likelihood Estimation from Male Record Speeds (M/s)") `
+
+#Canonical Correlation Analysis
+##Underlying Method
+
+Canonical Correlation Analysis is used to describe the relationships between 2 different sets of variables, $\boldsymbol{X}^{(1)}$ and $\boldsymbol{X}^{(2)}$  . This is achieved by analysing the correlation between linear combinations of the variables from the one set to linear combinations of variables from another set. Pairs of linear combinations that have the largest correlation are determined and shown below:
+\begin{align*}
+U_1 = \boldsymbol{A}_1' \boldsymbol{X}^{(1)} = \sum_i{a_{1i}x_i^{(1)}} \\
+V_1 = \boldsymbol{B}_1' \boldsymbol{X}^{(2)} = \sum_i{b_{1i}x_i^{(2)}}
+\end{align*}
+
+Then the pair of linear combinations with the largest correlation among all pairs uncorrelated with the initial pair is determined. This set can be repeated to get $p$ pairs. The derivation of the canonical covariates shows the following properties:
+\begin{itemize}
+\item Var$(U_k) =$ Var$(V_k) = 1$
+\item Cov$(U_k, U_l) =$ Corr$(U_k, U_l) = 0$
+\item Cov$(V_k, V_l) =$ Corr$(V_k, V_l) = 0$
+\item Cov$(U_k, V_l) =$ Corr$(U_k,V_l) = 0$
+\end{itemize}
+
+##Application of CCA to Nation Track Record Data
